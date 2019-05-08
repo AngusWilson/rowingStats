@@ -101,7 +101,6 @@ benchmarkRaces:{[]
 
 
 getPeicesFromSession:{[data;segs]
-	segs:desc segs;
 	//Picking out any/multiple segments
 	meterRack:([] Distances:`float$til ceiling exec max Distances from data);
 	racked:aj[`Distances;meterRack;data];
@@ -113,6 +112,7 @@ getPeicesFromSession:{[data;segs]
 		racked:update msumSpeed: piece msum Speed from racked;
 		end:first exec Distances from racked where msumSpeed=max msumSpeed;
 		race:select from racked where Distances within (end-piece;end);
+		.race.times,:exec first Time from race;
 		race:update Distances-min Distances,Time-min Time from race;
 		race:delete Speed,mvgSplit,msumSpeed from race;
 		.race.racked:select from racked where not Distances within (end-piece;end);
@@ -136,6 +136,7 @@ getPeicesFromSession:{[data;segs]
 		
 		
 		`meter`split xcol update `$4_/:-2_/: string avgSplit from sagg
+		
 		}[;splitNum] each races;
 		
 	full:flip (raze `Split,`$string segs)!flip(`1`2`3`4`total`avg),'flip {exec split from x}each breakDowns;
@@ -147,11 +148,12 @@ benchmarkSession:{[segs]
 	/pick out session csvs and load
 	files:`$":sessions/",/:string rName:key `:sessions;
 	datas:loadData each files;
-	sessions:getPeicesFromSession[;segs] each datas;
+	s:getPeicesFromSession[;segs] first datas;
+	session:o xcol (`0,(`$string[iasc .race.times])except `0) xcols (`$string til count o:cols s) xcol s;
 	
-	show each sessions
+	show session;
+	session
 	};
-
-benchmarkRaces[];
+	/benchmarkRaces[];
 	
-/benchmarkSession[2500 1500 1250];
+	/benchmarkSession[17#2000];
